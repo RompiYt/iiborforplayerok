@@ -268,8 +268,9 @@ async def chat(message: types.Message, state: FSMContext):
 
         await message.answer(response.choices[0].message.content)
 
-    except:
-        await message.answer("❌ Ошибка AI")
+    except Exception as e:
+        print("AI ERROR:", e)
+        await message.answer(f"❌ Ошибка AI:\n{e}")
 
 @dp.message(F.photo)
 async def handle_photo(message: types.Message, state: FSMContext):
