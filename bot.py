@@ -10,11 +10,13 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from openai import OpenAI
+import os
+
 
 # ================== НАСТРОЙКИ ==================
 
 TELEGRAM_TOKEN = "8289787557:AAHMIJ0bJJC9gBE84tXQFjKixgOk6WAVXmI"
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 ADMIN_IDS = [5080211871, 7874808674]
 DB = "bot.db"
@@ -269,7 +271,6 @@ async def chat(message: types.Message, state: FSMContext):
         await message.answer(response.choices[0].message.content)
 
     except Exception as e:
-        print("AI ERROR:", e)
         await message.answer(f"❌ Ошибка AI:\n{e}")
 
 @dp.message(F.photo)
