@@ -9,7 +9,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from openai import OpenAI
+import requests
 import os
 
 
@@ -22,11 +22,6 @@ ADMIN_IDS = [5080211871, 7874808674]
 DB = "bot.db"
 
 # ================== AI ==================
-
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
-)
 
 bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher()
@@ -259,17 +254,28 @@ async def chat(message: types.Message, state: FSMContext):
     await bot.send_chat_action(message.chat.id, "typing")
 
     try:
-        response = client.chat.completions.create(
-            model="openai/gpt-4o",
-            messages=[
-                {"role": "system", "content": "Ты полезный AI помощник. Отвечай коротко. Бот умеет обрабатывать текст и фотографии, включая математические примеры и задания с изображений."},
-                {"role": "user", "content": message.text}
-            ],
-            max_tokens=500
+        response = requests.post(
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://localhost",
+                "X-Title": "Telegram AI Bot"
+            },
+            json={
+                "model": "openai/gpt-4o",
+                "messages": [
+                    {"role": "system", "content": "Ты полезный AI помощник. Отвечай коротко. Бот умеет обрабатывать текст и фотографии, включая математические примеры и задания с изображений."},
+                    {"role": "user", "content": message.text}
+                ],
+                "max_tokens": 500
+            }
         )
-
-        await message.answer(response.choices[0].message.content)
-
+    
+        data = response.json()
+    
+        await message.answer(data["choices"][0]["message"]["content"])
+    
     except Exception as e:
         await message.answer(f"❌ Ошибка AI:\n{e}")
 
@@ -294,26 +300,37 @@ async def handle_photo(message: types.Message, state: FSMContext):
     image_data = base64.b64encode(image_bytes.read()).decode()
 
     try:
-        response = client.chat.completions.create(
-            model="openai/gpt-4o",  
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "Реши задание на изображении и дай четкий,правильный,короткий ответ. Если на изображении текст, то просто прочитай его и дай ответ. Не нужно ничего объяснять, просто дай ответ."},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_data}"
+        response = requests.post(
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://localhost",
+                "X-Title": "Telegram AI Bot"
+            },
+            json={
+                "model": "openai/gpt-4o",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Реши задание на изображении и дай четкий,правильный,короткий ответ. Если на изображении текст, то просто прочитай его и дай ответ. Не нужно ничего объяснять, просто дай ответ."},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{image_data}"
+                                }
                             }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=150
+                        ]
+                    }
+                ],
+                "max_tokens": 150
+            }
         )
-
-        await message.answer(response.choices[0].message.content)
+        
+        data = response.json()
+        
+        await message.answer(data["choices"][0]["message"]["content"])
 
     except Exception as e:
         print(e)
