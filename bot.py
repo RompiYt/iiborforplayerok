@@ -16,7 +16,7 @@ import os
 # ================== НАСТРОЙКИ ==================
 
 TELEGRAM_TOKEN = "8610281144:AAHeSWewgRyceEQM70czEXjQNkV4qpTJvlM"
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY = "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"
 
 ADMIN_IDS = [5080211871, 7874808674]
 DB = "bot.db"
