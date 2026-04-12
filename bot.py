@@ -273,7 +273,7 @@ async def chat(message: types.Message, state: FSMContext):
         )
     
         data = response.json()
-    
+        print(data)
         await message.answer(data["choices"][0]["message"]["content"])
     
     except Exception as e:
@@ -329,7 +329,7 @@ async def handle_photo(message: types.Message, state: FSMContext):
         )
         
         data = response.json()
-        
+        print(data)
         await message.answer(data["choices"][0]["message"]["content"])
 
     except Exception as e:
